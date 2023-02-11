@@ -7,9 +7,10 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 from matplotlib import pyplot
+from datetime import datetime
 
-cement = pd.read_excel(r"D:\python\project\cement_final.xlsx")
-cement['Month'] = cement['Month'].apply(lambda x: x.strftime('%B-%Y'))
+cement = pd.read_csv(r"D:/python/project/forcasting/cement.csv")
+cement['Month'] = cement['Month'].apply(lambda x: x.datetime('%D-%M-%Y'))
 
 cement['Sales'].plot()
 sns.boxplot(cement['Sales'])
@@ -17,86 +18,82 @@ plt.hist(cement['Sales'])
 cement.Sales.skew()
 cement.Sales.kurtosis()
 
-
-cement["t"] = np.arange(1,72)
+cement["t"] = np.arange(1,130)
 cement["t_square"] = cement["t"] * cement["t"]
 cement["log_sales"] = np.log(cement["Sales"])
 cement.columns
 
 p = cement["Month"][0]
 p[0:3]
-
-cement['months']= 0
-
-for i in range(71):
+cement['months'] = 0 
+for i in range(128):
     p = cement["Month"][i]
-    cement['months'][i]= p[0:3]
-    
+    cement['months'][i] = p[0:3]
+
 month_dummies = pd.DataFrame(pd.get_dummies(cement['months']))
-cement1 = pd.concat([cement, month_dummies], axis = 1)
+cement1 = pd.concat([cement, month_dummies], axis=1)
 
-Train = cement1.head(59)
-Test = cement1.tail(12)
+Train = cement1.head(113)
+Test = cement1.tail(15)
 ####################### L I N E A R ##########################
-import statsmodels.formula.api as smf 
+import statsmodels.formula.api as smf
 
-linear_model = smf.ols('Sales ~ t', data = Train).fit()
-pred_linear =  pd.Series(linear_model.predict(pd.DataFrame(Test['t'])))
-rmse_linear = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_linear))**2))
+linear_model = smf.ols('Sales ~ t', data=Train).fit()
+pred_linear = pd.Series(linear_model.predict(pd.DataFrame(Test['t'])))
+rmse_linear = np.sqrt(np.mean((np.array(Test['Sales']) -np.array(pred_linear)) ** 2))
 rmse_linear
 
 ##################### Exponential ##############################
 
-Exp = smf.ols('Sales ~ t', data = Train).fit()
+Exp = smf.ols('Sales ~ t', data=Train).fit()
 pred_Exp = pd.Series(Exp.predict(pd.DataFrame(Test['t'])))
-rmse_Exp = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(np.exp(pred_Exp)))**2))
+rmse_Exp = np.sqrt(np.mean((np.array(Test['Sales']) -np.array(pred_Exp)) ** 2))
 rmse_Exp
 
 #################### Quadratic ###############################
 
-Quad = smf.ols('Sales ~ t + t_square', data = Train).fit()
+Quad = smf.ols('Sales ~ t + t_square', data=Train).fit()
 pred_Quad = pd.Series(Quad.predict(Test[["t", "t_square"]]))
-rmse_Quad = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_Quad))**2))
+rmse_Quad = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_Quad)) ** 2))
 rmse_Quad
 
 ################### Additive seasonality ########################
 
 add_sea = smf.ols('Sales ~ Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov', data=Train).fit()
-pred_add_sea = pd.Series(add_sea.predict(Test[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov']]))
-rmse_add_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_add_sea))**2))
+pred_add_sea = pd.Series(add_sea.predict(Test[['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']]))
+rmse_add_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_add_sea)) ** 2))
 rmse_add_sea
 
 ################## Multiplicative Seasonality ##################
 
-Mul_sea = smf.ols('log_sales ~ Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov',data = Train).fit()
+Mul_sea = smf.ols('log_sales ~ Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov', data=Train).fit()
 pred_Mult_sea = pd.Series(Mul_sea.predict(Test))
-rmse_Mult_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(np.exp(pred_Mult_sea)))**2))
+rmse_Mult_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(np.exp(pred_Mult_sea))) ** 2))
 rmse_Mult_sea
 
 ################## Additive Seasonality Quadratic Trend ############################
 
 add_sea_Quad = smf.ols('Sales ~ t+t_square+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov', data=Train).fit()
-pred_add_sea_quad = pd.Series(add_sea_Quad.predict(Test[['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','t','t_square']]))
-rmse_add_sea_quad = np.sqrt(np.mean((np.array(Test['Sales'])-np.array(pred_add_sea_quad))**2))
-rmse_add_sea_quad 
+pred_add_sea_quad = pd.Series(add_sea_Quad.predict(Test[['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 't', 't_square']]))
+rmse_add_sea_quad = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(pred_add_sea_quad)) ** 2))
+rmse_add_sea_quad
 
 ################## Multiplicative Seasonality Linear Trend  ###########
 
-Mul_Add_sea = smf.ols('log_sales ~ t+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov',data = Train).fit()
+Mul_Add_sea = smf.ols('log_sales ~ t+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov', data=Train).fit()
 pred_Mult_add_sea = pd.Series(Mul_Add_sea.predict(Test))
-rmse_Mult_add_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(np.exp(pred_Mult_add_sea)))**2))
-rmse_Mult_add_sea 
+rmse_Mult_add_sea = np.sqrt(np.mean((np.array(Test['Sales']) - np.array(np.exp(pred_Mult_add_sea))) ** 2))
+rmse_Mult_add_sea
 
-data = {"MODEL":pd.Series(["rmse_linear","rmse_Exp","rmse_Quad","rmse_add_sea","rmse_Mult_sea","rmse_add_sea_quad","rmse_Mult_add_sea"]),"RMSE_Values":pd.Series([rmse_linear,rmse_Exp,rmse_Quad,rmse_add_sea,rmse_Mult_sea,rmse_add_sea_quad,rmse_Mult_add_sea])}
+data = {"MODEL": pd.Series(["rmse_linear", "rmse_Exp", "rmse_Quad", "rmse_add_sea", "rmse_Mult_sea", "rmse_add_sea_quad","rmse_Mult_add_sea"]), "RMSE_Values": pd.Series([rmse_linear, rmse_Exp, rmse_Quad, rmse_add_sea, rmse_Mult_sea, rmse_add_sea_quad, rmse_Mult_add_sea])}
 table_rmse = pd.DataFrame(data)
 table_rmse
 
-model_full = smf.ols('Sales ~ t+t_square+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov', data = cement1).fit()
-
-predict_data = pd.read_excel(r"D:/Aniket Project/predict.xlsx")
-
+model_full = smf.ols('Sales ~ t + t_square+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov+Dec', data=cement1).fit()
+predict_data = pd.read_excel(r"D:/python/project/forcasting/predn.xlsx")
 pred_new = pd.Series(model_full.predict(predict_data))
 pred_new
+
 
 predict_data["forecasted_Sales"] = pd.Series(pred_new)
 
@@ -107,12 +104,13 @@ full_res = cement1.Sales - model_full.predict(cement1)
 
 # ACF plot on residuals
 import statsmodels.graphics.tsaplots as tsa_plots
-tsa_plots.plot_acf(full_res, lags = 12)
-# ACF is an (complete) auto-correlation function gives values 
+
+tsa_plots.plot_acf(full_res, lags=12)
+# ACF is an (complete) auto-correlation function gives values
 # of auto-correlation of any time series with its lagged values.
 
-# PACF is a partial auto-correlation function. 
-# It finds correlations of present with lags of the residuals of the time series 
+# PACF is a partial auto-correlation function.
+# It finds correlations of present with lags of the residuals of the time series
 tsa_plots.plot_pacf(full_res, lags=12)
 
 # Alternative approach for ACF plot
@@ -121,13 +119,14 @@ tsa_plots.plot_pacf(full_res, lags=12)
 
 # AR model
 from statsmodels.tsa.ar_model import AutoReg
+
 model_ar = AutoReg(full_res, lags=[1])
 # model_ar = AutoReg(Train_res, lags=5)
 model_fit = model_ar.fit()
 
 print('Coefficients: %s' % model_fit.params)
 
-pred_res = model_fit.predict(start=len(full_res), end=len(full_res)+len(predict_data)-1, dynamic=False)
+pred_res = model_fit.predict(start=len(full_res), end=len(full_res) + len(predict_data) - 1, dynamic=False)
 pred_res.reset_index(drop=True, inplace=True)
 
 # The Final Predictions using ASQT and AR(1) Model
@@ -135,26 +134,26 @@ final_pred = pred_new + pred_res
 final_pred
 ############################## ARIMA ##############
 from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.holtwinters import SimpleExpSmoothing # SES
-from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
-from statsmodels.tsa.holtwinters import ExponentialSmoothing 
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing  # SES
+from statsmodels.tsa.holtwinters import Holt  # Holts Exponential Smoothing
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-cement = pd.read_excel(r"D:\python\project\cement_final.xlsx")
-Train = cement.head(59)
-Test = cement.tail(12)
+cement = pd.read_csv(r"D:/python/project/forcasting/cement.csv")
+Train = cement.head(114)
+Test = cement.tail(15)
 
-tsa_plots.plot_acf(cement.Sales, lags = 12)
-tsa_plots.plot_pacf(cement.Sales,lags = 12)
+tsa_plots.plot_acf(cement.Sales, lags=12)
+tsa_plots.plot_pacf(cement.Sales, lags=12)
 
 # ARIMA with AR=1, MA = 12(1,1,12),(4,1,12)
-model1 = ARIMA(Train.Sales, order = (4,1,12))
+model1 = ARIMA(Train.Sales, order=(4, 1, 12))
 res1 = model1.fit()
 print(res1.summary())
 
 # Forecast for next 12 months
 start_index = len(Train)
 end_index = start_index + 11
-forecast_test = res1.predict(start = start_index, end = end_index)
+forecast_test = res1.predict(start=start_index, end=end_index)
 
 print(forecast_test)
 
@@ -171,17 +170,11 @@ pyplot.show()
 # pip install pmdarima --user
 import pmdarima as pm
 
-ar_model = pm.auto_arima(Train.Sales, start_p=0, start_q=0,
-                      max_p=12, max_q=12, # maximum p and q
-                      m=1,              # frequency of series
-                      d=None,           # let model determine 'd'
-                      seasonal=True,   # No Seasonality
-                      start_P=0, trace=True,
-                      error_action='warn', stepwise=True)
+ar_model = pm.auto_arima(Train.Sales, start_p=0, start_q=0,max_p=12, max_q=12,d=None,seasonal=True,start_P=0, trace=True,error_action='warn', stepwise=True)
 
 # Best Parameters ARIMA
 # ARIMA with AR = 4, I = 0, MA = 0
-model = ARIMA(Train.Sales, order = (4, 0, 0))
+model = ARIMA(Train.Sales, order=(4, 0, 0))
 res = model.fit()
 print(res.summary())
 
@@ -204,7 +197,7 @@ pyplot.show()
 # Forecast for future 12 months
 start_index = len(cement)
 end_index = start_index + 11
-forecast = res.predict(start = start_index, end = end_index)
+forecast = res.predict(start=start_index, end=end_index)
 
 print(forecast)
 
@@ -213,73 +206,75 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.holtwinters import SimpleExpSmoothing # SES
-from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
-from statsmodels.tsa.holtwinters import ExponentialSmoothing # Holt Winter's Exponential Smoothing
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing  # SES
+from statsmodels.tsa.holtwinters import Holt  # Holts Exponential Smoothing
+from statsmodels.tsa.holtwinters import ExponentialSmoothing  # Holt Winter's Exponential Smoothing
 
-cement = pd.read_excel(r"D:\python\project\cement_final.xlsx")
+cement = pd.read_csv(r"D:/python/project/forcasting/cement.csv")
 cement.Sales.plot()
 
-Train = cement.head(59)
-Test = cement.tail(12)
+Train = cement.head(114)
+Test = cement.tail(15)
 
-# Creating a function to calculate the MAPE value for test data 
+
+# Creating a function to calculate the MAPE value for test data
 def MAPE(pred, org):
-    temp = np.abs((pred-org)/org)*100
+    temp = np.abs((pred - org) / org) * 100
     return np.mean(temp)
 
-mv_pred = cement["Sales"].rolling(4).mean()
-mv_pred.tail(4)
+
+mv_pred = cement["Sales"].rolling(5).mean()
+mv_pred.tail(5)
+mv_pred
 MAPE(mv_pred.tail(4), Test.Sales)
 
-cement.Sales.plot(label = "org")
+cement.Sales.plot(label="org")
 for i in range(2, 9, 2):
-    cement["Sales"].rolling(i).mean().plot(label = str(i))
-plt.legend(loc = 3)
-
+    cement["Sales"].rolling(i).mean().plot(label=str(i))
+plt.legend(loc=3)
 
 import statsmodels.graphics.tsaplots as tsa_plots
-tsa_plots.plot_acf(cement.Sales, lags = 12)
+
+tsa_plots.plot_acf(cement.Sales, lags=12)
 tsa_plots.plot_pacf(cement.Sales, lags=12)
 
 # Simple Exponential Method
 ses_model = SimpleExpSmoothing(Train["Sales"]).fit()
-pred_ses = ses_model.predict(start = Test.index[0], end = Test.index[-1])
-MAPE(pred_ses, Test.Sales) 
+pred_ses = ses_model.predict(start=Test.index[0], end=Test.index[-1])
+MAPE(pred_ses, Test.Sales)
 
-# Holt method 
+# Holt method
 hw_model = Holt(Train["Sales"]).fit()
-pred_hw = hw_model.predict(start = Test.index[0], end = Test.index[-1])
-MAPE(pred_hw, Test.Sales) 
+pred_hw = hw_model.predict(start=Test.index[0], end=Test.index[-1])
+MAPE(pred_hw, Test.Sales)
 
 # Holts winter exponential smoothing with additive seasonality and additive trend
-hwe_model_add_add = ExponentialSmoothing(Train["Sales"], seasonal = "add", trend = "add", seasonal_periods = 12).fit()
-pred_hwe_add_add = hwe_model_add_add.predict(start = Test.index[0], end = Test.index[-1])
-MAPE(pred_hwe_add_add, Test.Sales) 
+hwe_model_add_add = ExponentialSmoothing(Train["Sales"], seasonal="add", trend="add", seasonal_periods=12).fit()
+pred_hwe_add_add = hwe_model_add_add.predict(start=Test.index[0], end=Test.index[-1])
+MAPE(pred_hwe_add_add, Test.Sales)
 
 # Holts winter exponential smoothing with multiplicative seasonality and additive trend
-hwe_model_mul_add = ExponentialSmoothing(Train["Sales"], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
-pred_hwe_mul_add = hwe_model_mul_add.predict(start = Test.index[0], end = Test.index[-1])
-MAPE(pred_hwe_mul_add, Test.Sales) 
+hwe_model_mul_add = ExponentialSmoothing(Train["Sales"], seasonal="mul", trend="add", seasonal_periods=12).fit()
+pred_hwe_mul_add = hwe_model_mul_add.predict(start=Test.index[0], end=Test.index[-1])
+MAPE(pred_hwe_mul_add, Test.Sales)
 
 # Final Model on 100% Data
-hwe_model_mul_add = ExponentialSmoothing(cement["Sales"], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
+hwe_model_mul_add = ExponentialSmoothing(cement["Sales"], seasonal="mul", trend="add", seasonal_periods=12).fit()
 
 # Load the new data which includes the entry for future 4 values
-new_data = pd.read_excel(r"D:/Aniket Project/datadriven.xlsx")
+new_data = pd.read_csv(r"D:/python/project/forcasting/data_driven.csv")
 
-newdata_pred = hwe_model_mul_add.predict(start = new_data.index[0], end = new_data.index[-1])
+newdata_pred = hwe_model_mul_add.predict(start=new_data.index[0], end=new_data.index[-1])
 newdata_pred
 
 ##################### Auto TS ##############################
-!pip install auto_ts
+#pip install auto_ts
 from autots import AutoTS
-model = AutoTS(forecast_length=12, frequency='infer', 
-               ensemble='simple', drop_data_older_than_periods=200)
+model = AutoTS(forecast_length=12, frequency='infer',ensemble='simple', drop_data_older_than_periods=129)
 model1 = model.fit(Train, date_col='Month', value_col='Sales', id_col=None)
 start_index = len(Train)
 end_index = start_index + 11
-forecast_test = model1.predict(start = start_index, end = end_index)
+forecast_test = model1.predict(start=start_index, end=end_index)
 
 
 
