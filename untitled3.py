@@ -8,11 +8,11 @@ from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 st.title('Forecast of Cement Sales')
-uploaded_file = st.file_uploader(" ", type=['xlsx'])
+uploaded_file = st.file_uploader(" ", type=['csv'])
 
 if uploaded_file is not None:     
     cement = pd.read_excel(uploaded_file)
-    cement['Month'] = cement['Month'].apply(lambda x: x.strftime('%B-%Y'))
+    cement['Month'] = cement['Month'].apply(lambda x: x.strftime('%D-%M-%Y'))
     
     hwe_model_mul_add = ExponentialSmoothing(cement["Sales"][:71], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
     
