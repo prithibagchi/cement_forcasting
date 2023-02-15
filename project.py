@@ -10,7 +10,7 @@ from math import sqrt
 from matplotlib import pyplot
 from datetime import datetime
 
-cement = pd.read_csv(r"https://github.com/prithi-bagchi/prithi_Github/blob/main/cement.csv")
+cement = pd.read_csv(r"https://github.com/prithibagchi/cement_forcasting/blob/main/cement.csv")
 cement['Sales'].plot()
 sns.boxplot(cement['Sales'])
 plt.hist(cement['Sales'])
@@ -95,7 +95,7 @@ table_rmse
 ##################################################################################################################################################################################################################################################################
 
 model_full = smf.ols('Sales ~ t + t_square+Jan+Feb+Mar+Apr+May+Jun+Jul+Aug+Sep+Oct+Nov+Dec', data=cement1).fit()
-predict_data = pd.read_csv(r"https://github.com/prithi-bagchi/prithi_Github/blob/main/predn.csv")
+predict_data = pd.read_csv(r"https://github.com/prithibagchi/cement_forcasting/blob/main/predn.csv")
 
 predict_data['Sales'].plot()
 sns.boxplot(predict_data['Sales'])
@@ -166,7 +166,7 @@ from statsmodels.tsa.holtwinters import SimpleExpSmoothing # SES
 from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
 from statsmodels.tsa.holtwinters import ExponentialSmoothing 
 
-cement = pd.read_csv(r"https://github.com/prithi-bagchi/prithi_Github/blob/main/cement.csv")
+cement = pd.read_csv(r"https://github.com/prithibagchi/cement_forcasting/blob/main/cement.csv")
 Train = cement.head(59)
 Test = cement.tail(12)
 
@@ -247,7 +247,7 @@ from statsmodels.tsa.holtwinters import SimpleExpSmoothing # SES
 from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
 from statsmodels.tsa.holtwinters import ExponentialSmoothing # Holt Winter's Exponential Smoothing
 
-cement = pd.read_csv(r"https://github.com/prithi-bagchi/prithi_Github/blob/main/cement.csv")
+cement = pd.read_csv(r"https://github.com/prithibagchi/cement_forcasting/blob/main/cement.csv")
 cement.Sales.plot()
 
 Train = cement.head(90)
@@ -297,7 +297,7 @@ MAPE(pred_hwe_mul_add, Test.Sales)
 hwe_model_mul_add = ExponentialSmoothing(cement["Sales"], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
 
 # Load the new data which includes the entry for future 4 values
-new_data = pd.read_csv(r"https://github.com/prithi-bagchi/prithi_Github/blob/main/data_driven.csv")
+new_data = pd.read_csv(r"https://github.com/prithibagchi/cement_forcasting/blob/main/data_driven.csv")
 
 newdata_pred = hwe_model_mul_add.predict(start = new_data.index[0], end = new_data.index[-1])
 newdata_pred
