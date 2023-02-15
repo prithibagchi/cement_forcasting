@@ -8,7 +8,7 @@ from statsmodels.tsa.holtwinters import Holt # Holts Exponential Smoothing
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 st.title('Forecast of Cement Sales')
-uploaded_file = st.file_uploader("https://github.com/prithi-bagchi/prithi_Github/blob/main/cement.csv", type=['csv'])
+uploaded_file = st.file_uploader("cement.csv", type=['csv'])
 
 if uploaded_file is not None:     
     cement = pd.read_csv(uploaded_file)
