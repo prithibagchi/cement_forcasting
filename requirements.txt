@@ -7,6 +7,4 @@ pmdarima==2.0.2
 seaborn
 statsmodels
 datetime
-tsa_plots
-pmdarima 
-AutoTS
+
