@@ -4,3 +4,13 @@ pandas==1.5.1
 streamlit==1.13.0
 openpyxl==3.0.10
 pmdarima==2.0.2
+seaborn
+statsmodels
+sqrt
+pyplot
+datetime
+mean_squared_error
+ARIMA
+tsa_plots
+pmdarima 
+AutoTS
