@@ -6,8 +6,7 @@ openpyxl==3.0.10
 pmdarima==2.0.2
 seaborn
 statsmodels
-datetime
-mean_squared_error
+datetim
 ARIMA
 tsa_plots
 pmdarima 
