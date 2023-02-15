@@ -303,7 +303,7 @@ newdata_pred = hwe_model_mul_add.predict(start = new_data.index[0], end = new_da
 newdata_pred
 
 ################################################### Auto TS #############################################################
-!pip install auto_ts
+#!pip install auto_ts
 from autots import AutoTS
 model = AutoTS(forecast_length=12, frequency='infer', 
                ensemble='simple', drop_data_older_than_periods=200)
