@@ -12,7 +12,6 @@ uploaded_file = st.file_uploader(" ", type=['csv'])
 
 if uploaded_file is not None:     
     cement = pd.read_csv(uploaded_file)
-    cement['Month'] = cement['Month'].apply(lambda x: x.strftime('%D-%M-%Y'))
     
     hwe_model_mul_add = ExponentialSmoothing(cement["Sales"][:71], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
     
