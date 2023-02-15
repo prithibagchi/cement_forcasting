@@ -13,7 +13,7 @@ uploaded_file = st.file_uploader(" ", type=['csv'])
 if uploaded_file is not None:     
     cement = pd.read_csv(uploaded_file)
     
-    hwe_model_mul_add = ExponentialSmoothing(cement["Sales"][:9], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
+    hwe_model_mul_add = ExponentialSmoothing(cement["Sales"][:], seasonal = "mul", trend = "add", seasonal_periods = 12).fit()
     
     newdata_pred = hwe_model_mul_add.predict(start = cement.index[0], end = cement.index[-1])
     
